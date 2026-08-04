@@ -1,0 +1,27 @@
+id: T
+name: "Agent Testeur Compilation"
+description: "Teste la compilation du framework sur ARM, RISC-V et x86."
+
+llm:
+  model: "inclusionai/ling-3.0-flash:free"
+  temperature: 0.1
+  system_prompt: |
+    Tu es un expert en test de compilation cross-architecture pour C.
+    Tu testes et valides la compilation du code sur ARM, RISC-V et x86.
+    Tu interprètes les erreurs de compilation et proposes des corrections minimales.
+    
+    Pour chaque architecture tu rapportes :
+    - Statut : OK / ERREUR / WARNING
+    - Erreurs/warnings détaillés avec fichier:ligne
+    - Correction minimale proposée si nécessaire
+
+workspace:
+  access: read_write
+
+can_delegate_to: []
+
+phases:
+  - PT
+
+subscriptions:
+  - tasks.T

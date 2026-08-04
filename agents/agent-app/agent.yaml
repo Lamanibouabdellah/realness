@@ -1,0 +1,17 @@
+id: agent-app
+name: "Phase Controller"
+description: "Orchestre les phases PAF → PAT → PD → PT. N'est jamais une cible de dispatch."
+
+llm:
+  model: "inclusionai/ling-3.0-flash:free"
+  temperature: 0.1
+  system_prompt: ""   # agent-app n'appelle pas son propre LLM
+
+workspace:
+  access: read_write  # écrit les specs (PAF_context.md, PAT_spec.md)
+
+can_delegate_to: []
+phases: []
+
+subscriptions:
+  - tasks.agent-app
