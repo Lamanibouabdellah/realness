@@ -1,4 +1,5 @@
 /* spec: PAT:1.0 | fonctionnel: PAF:1.0 */
+#include "clean.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,8 +43,7 @@ static int remove_dir(const char *path) {
     return rmdir(path);
 }
 
-int main(int argc, char *argv[]) {
-    const char *target = (argc > 1) ? argv[1] : ".";
+int clean(const char *target) {
     DIR *dir = opendir(target);
     if (!dir) { perror("opendir"); return 1; }
     struct dirent *entry;

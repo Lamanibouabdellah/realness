@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <ftw.h>
 
-/* spec: PAT:1.0 | fonctionnel: PAF:1.0 */
 static int delete_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
     (void)sb;
@@ -19,15 +18,10 @@ static int delete_cb(const char *fpath, const struct stat *sb, int typeflag, str
     return rc;
 }
 
-/* spec: PAT:1.0 | fonctionnel: PAF:1.0 */
-int main(int argc, char *argv[])
+int clean_dir(const char *path)
 {
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s <directory>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-    if (nftw(argv[1], delete_cb, 20, FTW_DEPTH | FTW_PHYS) == -1) {
-        fprintf(stderr, "error: cannot open %s\n", argv[1]);
+    if (nftw(path, delete_cb, 20, FTW_DEPTH | FTW_PHYS) == -1) {
+        fprintf(stderr, "error: cannot open %s\n", path);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
