@@ -91,15 +91,6 @@ git-tags:
 redis-cli:
 	docker compose exec redis redis-cli
 
-# ─── Git (platform) ────────────────────────────────────────────────────────────
-
-## Commit + push rapide de la plateforme (infra seulement)
-platform-git-update:
-	@git add .
-	@git diff --cached --quiet \
-		&& echo "Plateforme : rien à committer" \
-		|| git commit -m "chore: platform update"
-	@git push || echo "Plateforme : rien à pusher (vérifier remote)"
 
 # ─── Aide ──────────────────────────────────────────────────────────────────────
 
