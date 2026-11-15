@@ -1,0 +1,30 @@
+{
+  "selected": {
+    "code": "cohere/north-mini-code:free",
+    "reasoning": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "fast": "nvidia/nemotron-3.5-lightning:free",
+    "vision": "nvidia/nemotron-3.5-super-vl:free"
+  },
+  "fallbacks": {
+    "code": [
+      "particle-ai/particle-1:free",
+      "recursive/flint-v1.0:free"
+    ],
+    "reasoning": [
+      "baidu/ernie-5.5-flash-preview:free"
+    ],
+    "fast": [
+      "particle-ai/particle-1:free"
+    ],
+    "vision": []
+  },
+  "all_enabled": [
+    "cohere/north-mini-code:free",
+    "particle-ai/particle-1:free",
+    "recursive/flint-v1.0:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "baidu/ernie-5.5-flash-preview:free",
+    "nvidia/nemotron-3.5-lightning:free",
+    "nvidia/nemotron-3.5-super-vl:free"
+  ]
+}

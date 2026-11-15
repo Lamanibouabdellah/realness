@@ -1,0 +1,4 @@
+
+# Local API credentials
+.env
+.omp-backups/
