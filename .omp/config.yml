@@ -1,0 +1,31 @@
+enabledProviders: []
+disabledProviders:
+  - anthropic
+  - openai
+  - openai-codex
+  - google
+  - google-vertex
+  - groq
+  - mistral
+  - xai
+  - github-copilot
+  - cursor
+  - azure
+  - amazon-bedrock
+  - deepseek
+  - ollama
+  - lm-studio
+  - llama.cpp
+enabledModels:
+  - openrouter/*:free
+  - openrouter/free
+modelRoles:
+  default: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+symbolPreset: unicode
+composer:
+  shape: band
+theme:
+  dark: titanium
+update:
+  auto: false
+setupVersion: 3
