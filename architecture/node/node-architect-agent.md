@@ -1,4 +1,4 @@
-model: openrouter/cohere/north-mini-code:free
+model: openrouter/inclusionai/ling-3.2-flash:free
 
 definition: "Architecte et expert des systèmes de graphes : pense l'existence et l'intégration d'un nœud dans un graphe complexe et ses relations avec les autres nœuds."
 

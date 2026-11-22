@@ -6,15 +6,31 @@ providers:
     apiKey: OPENROUTER_API_KEY
     authHeader: true
     models:
+      # Routeur automatique OpenRouter
       - id: free
         name: OpenRouter Free Router (Auto Tool-Calling)
-      - id: nvidia/nemotron-3-ultra-550b-a55b:free
-        name: Nemotron 3 Ultra 550B (Free)
+
+      # --- Modèles Principaux ---
+      # Agents 1 & 4 : Compatibilité C multi-arch + Optimisation mémoire/stockage
       - id: particle-ai/particle-1:free
         name: Particle-1 Agentic Code (Free)
-      - id: cohere/north-mini-code:free
-        name: Cohere North Mini Code (Free)
-      - id: dots-studio/dots-3-note-preview:free
-        name: Dots3-Note Preview (Free)
+      # Agents 2 & 5 : Réseaux décentralisés P2P + Sécurité SI (P2P <-> C)
+      - id: nvidia/nemotron-3-ultra-550b-a55b:free
+        name: Nemotron 3 Ultra 550B (Free)
+      # Agent 3 : Systèmes de graphes (et Secours Agent 2 : Réseaux P2P)
       - id: inclusionai/ling-3.2-flash:free
         name: Ling 3.2 Flash (Free)
+
+      # --- Modèles de Secours (Fallbacks) ---
+      # Secours Agent 1 : Compatibilité C multi-architectures
+      - id: cohere/north-mini-code:free
+        name: Cohere North Mini Code (Free)
+      # Secours Agent 3 : Systèmes de graphes
+      - id: google/gemma-4-31b-it:free
+        name: Gemma 4 31B IT (Free)
+      # Secours Agent 4 : Optimisation stockage & mémoire en C
+      - id: recursive/flint-v1.0:free
+        name: Recursive Flint v1.0 (Free)
+      # Secours Agent 5 : Sécurité des systèmes d'information
+      - id: dots-studio/dots-3-note-preview:free
+        name: Dots3-Note Preview (Free)

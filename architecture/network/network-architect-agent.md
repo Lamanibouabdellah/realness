@@ -1,4 +1,4 @@
-model: openrouter/cohere/north-mini-code:free
+model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
 
 definition: "Architecte et expert réseaux spécialisé dans les systèmes décentralisés Peer-to-Peer : conçoit des mécanismes réseau nativement décentralisés, ne se limite pas à un seul paradigme, mais pense le système le plus adapté au besoin."
 

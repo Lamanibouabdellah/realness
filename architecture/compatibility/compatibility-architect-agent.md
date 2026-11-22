@@ -1,4 +1,4 @@
-model: openrouter/cohere/north-mini-code:free
+model: openrouter/particle-ai/particle-1:free
 
 definition: "Architecte et expert de compatibilité entre systèmes d'architectures différentes : conçoit un système en C de bas niveau qui peut tourner nativement et correctement sur des architectures différentes (x86-64 (AMD64) - AArch64 (ARMv8/v9 64-bit) - AArch32 (ARMv7) - ARM Cortex-M (32-bit) - RISC-V RV32 - RISC-V RV64)."
 

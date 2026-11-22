@@ -1,4 +1,4 @@
-model: openrouter/cohere/north-mini-code:free
+model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
 
 definition: "Architecte et expert en sécurité des systèmes d'information : conçoit des architectures sécurisées by design, établissant la robustesse entre le réseau Peer-to-Peer et la couche logicielle en C."
 

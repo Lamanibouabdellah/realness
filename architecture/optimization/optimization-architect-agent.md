@@ -1,4 +1,4 @@
-model: openrouter/cohere/north-mini-code:free
+model: openrouter/particle-ai/particle-1:free
 
 definition: "Architecte et expert d'optimisation des systèmes de bas niveau : conçoit en C un système de bas niveau nativement robuste en matière de stockage et de gestion de la mémoire."
 
