@@ -1,0 +1,32 @@
+# --- OMP runtime state (jamais versionné) ----------------------------
+# Seuls la config, le code et les fichiers .md de contexte sont suivis ;
+# tout ce qui suit est de l'état régénérable produit par omp dans .omp/.
+.omp/sessions/
+.omp/terminal-sessions/
+.omp/cache/
+.omp/blobs/
+.omp/memories/
+.omp/predict/
+.omp/logs/
+.omp/run/
+.omp/natives/
+.omp/puppeteer/
+.omp/agents/.cache/
+
+# Bases SQLite (agent.db, history.db, models.db, skill-descriptions.db, ...)
+.omp/*.db*
+
+# Verrous, logs, état transitoire
+.omp/*.lock
+.omp/*.log
+.omp/last-changelog-version
+.omp/secret-placeholder.key
+.omp/.broken-*
+
+# --- Secrets (local uniquement) --------------------------------------
+.omp/.env
+*.env.local
+
+# --- Bruit OS / éditeur ----------------------------------------------
+.DS_Store
+*.swp

@@ -1,0 +1,8 @@
+# Force des fins de ligne LF dans l'arbre de travail : le dépôt est conçu pour
+# WSL/Linux, où des scripts .sh en CRLF ne s'exécutent pas. Ceci neutralise un
+# core.autocrlf global et garantit que le dépôt est portable tel quel.
+* text=auto eol=lf
+*.sh text eol=lf
+*.db binary
+*.db-shm binary
+*.db-wal binary
