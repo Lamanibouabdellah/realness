@@ -18,9 +18,9 @@ disabledProviders:
   - lm-studio
   - llama.cpp
 
-enabledModels:
-  - openrouter/*:free
-  - openrouter/free
+# enabledModels:
+#   - openrouter/*:free
+#   - openrouter/free
 
 modelRoles:
   default: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free

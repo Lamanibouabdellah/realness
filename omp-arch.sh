@@ -13,5 +13,8 @@ if [ ! -f "$ROOT/.omp/.env" ]; then
   echo "realness: .omp/.env manquant — copie .omp/.env.example vers .omp/.env et renseigne OPENROUTER_API_KEY." >&2
 fi
 
+sed -i '' $'s/\r$//' $ROOT/.omp/.env
+set -a && source $ROOT/.omp/.env && set +a
+
 cd "$ROOT"
 exec omp "$@"
