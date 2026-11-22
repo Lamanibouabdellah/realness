@@ -1,3 +1,7 @@
-sessions/
-agent.db*
+sessions
+terminal-sessions
+cache
+*.db*
 *.log
+*changelog*
+*.lock
