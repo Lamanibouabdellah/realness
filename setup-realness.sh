@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$(basename "$PWD")" != "realness" ]; then
-  echo "Erreur : placez-vous dans le dossier 'realness/' avant de lancer ce script (actuel : '$PWD')." >&2
-  exit 1
-fi
+# realness — bootstrap du dépôt .omp personnalisé (OpenRouter uniquement).
+#
+# Idempotent : régénère la configuration et l'extension, mais NE TOUCHE PAS
+# aux fichiers de contexte déjà présents dans architecture/ (ton travail).
+# Relancer ce script ne détruit donc jamais tes contextes ni ton .env.
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT"
 
 mkdir -p .omp/extensions
 mkdir -p \
@@ -14,7 +18,74 @@ mkdir -p \
   architecture/node \
   architecture/optimization
 
-# 1. Configuration OMP isolée (OpenRouter uniquement, aucune config système)
+# ---------------------------------------------------------------------------
+# 1. .gitignore unique à la racine : espace de travail propre.
+#    On garde uniquement .md, la config et le code (js/sh/ts), jamais l'état runtime.
+# ---------------------------------------------------------------------------
+cat << 'EOF' > .gitignore
+# --- OMP runtime state (jamais versionné) ----------------------------
+# Seuls la config, le code et les fichiers .md de contexte sont suivis ;
+# tout ce qui suit est de l'état régénérable produit par omp dans .omp/.
+.omp/sessions/
+.omp/terminal-sessions/
+.omp/cache/
+.omp/blobs/
+.omp/memories/
+.omp/predict/
+.omp/logs/
+.omp/run/
+.omp/natives/
+.omp/puppeteer/
+.omp/agents/.cache/
+
+# Bases SQLite (agent.db, history.db, models.db, skill-descriptions.db, ...)
+.omp/*.db*
+
+# Verrous, logs, état transitoire
+.omp/*.lock
+.omp/*.log
+.omp/last-changelog-version
+.omp/secret-placeholder.key
+.omp/.broken-*
+
+# --- Secrets (local uniquement) --------------------------------------
+.omp/.env
+*.env.local
+
+# --- Bruit OS / éditeur ----------------------------------------------
+.DS_Store
+*.swp
+EOF
+
+# Ancien emplacement du .gitignore : on le retire (déplacé à la racine).
+rm -f .omp/.gitignore
+
+# ---------------------------------------------------------------------------
+# 2. Provider unique : OpenRouter (clé lue depuis .omp/.env, jamais commitée).
+# ---------------------------------------------------------------------------
+cat << 'EOF' > .omp/models.yml
+providers:
+  openrouter:
+    baseUrl: https://openrouter.ai/api/v1
+    api: openai-completions
+    # Résolue depuis .omp/.env (chargé car le lanceur pointe le dossier agent d'omp ici).
+    apiKey: OPENROUTER_API_KEY
+    authHeader: true
+    models:
+      - id: free
+        name: OpenRouter Free Router (Auto Tool-Calling)
+      - id: nvidia/nemotron-3-ultra-550b-a55b:free
+        name: Nemotron 3 Ultra 550B (Free)
+      - id: particle-ai/particle-1:free
+        name: Particle-1 Agentic Code (Free)
+      - id: cohere/north-mini-code:free
+        name: Cohere North Mini Code (Free)
+      - id: dots-studio/dots-3-note-preview:free
+        name: Dots3-Note Preview (Free)
+      - id: inclusionai/ling-3.2-flash:free
+        name: Ling 3.2 Flash (Free)
+EOF
+
 cat << 'EOF' > .omp/config.yml
 enabledProviders: []
 
@@ -37,42 +108,42 @@ disabledProviders:
   - llama.cpp
 
 enabledModels:
-  - "openrouter/*:free"
-  - "openrouter/free"
+  - openrouter/*:free
+  - openrouter/free
 
 modelRoles:
-  default: openrouter/free
+  default: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+
+symbolPreset: unicode
+
+composer:
+  shape: band
+
+theme:
+  dark: titanium
+
+update:
+  auto: false
+
+setupVersion: 3
 EOF
 
-# 2. Provider OpenRouter (utilise la variable système OPENROUTER_API_KEY)
-cat << 'EOF' > .omp/models.yml
-providers:
-  openrouter:
-    baseUrl: https://openrouter.ai/api/v1
-    api: openai-completions
-    apiKey: OPENROUTER_API_KEY
-    models:
-      - id: free
-        name: OpenRouter Free Router (Auto Tool-Calling)
-      - id: nvidia/nemotron-3-ultra-550b-a55b:free
-        name: Nemotron 3 Ultra 550B (Free)
-      - id: particle-ai/particle-1:free
-        name: Particle-1 Agentic Code (Free)
-      - id: cohere/north-mini-code:free
-        name: Cohere North Mini Code (Free)
-      - id: dots-studio/dots-3-note-preview:free
-        name: Dots3-Note Preview (Free)
-      - id: inclusionai/ling-3.2-flash:free
-        name: Ling 3.2 Flash (Free)
+cat << 'EOF' > .omp/.env.example
+# OpenRouter credential — le fournisseur unique de ce dépôt.
+#
+# Copie ce fichier en `.env` (git-ignoré) dans le même dossier puis renseigne la clé :
+#
+#     cp .omp/.env.example .omp/.env
+#
+# `omp-arch.sh` pointe le dossier agent d'omp vers ce dépôt, donc omp charge
+# `.omp/.env` automatiquement. Aucune variable d'environnement hors du dépôt
+# n'est nécessaire.
+OPENROUTER_API_KEY=
 EOF
 
-cat << 'EOF' > .omp/.gitignore
-sessions/
-agent.db*
-*.log
-EOF
-
-# 3. Extension OMP : sélecteur d'agent au démarrage + rechargement à chaud
+# ---------------------------------------------------------------------------
+# 3. Extension OMP : sélecteur d'agent au démarrage + rechargement à chaud.
+# ---------------------------------------------------------------------------
 cat << 'EOF' > .omp/extensions/architect-session.ts
 import type { ExtensionAPI, ExtensionContext } from "@oh-my-pi/pi-coding-agent";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -202,11 +273,12 @@ export default function architectSessionExtension(pi: ExtensionAPI): void {
     activeDomain = agent.domain;
 
     if (agent.model) {
-      const available = ctx.modelRegistry.getAvailable();
+      const registry = ctx.modelRegistry;
+      const available = registry ? registry.getAvailable() : [];
       const resolved = agent.model.includes("/")
         ? (() => {
             const [provider, ...rest] = agent.model.split("/");
-            return ctx.modelRegistry.find(provider, rest.join("/"));
+            return registry?.find(provider, rest.join("/"));
           })()
         : available.find((m) => m.id === agent.model || `${m.provider}/${m.id}` === agent.model);
 
@@ -282,7 +354,9 @@ export default function architectSessionExtension(pi: ExtensionAPI): void {
   pi.on("input", async (_event, ctx) => {
     if (!activeDomain) {
       const selected = await selectAgent(ctx);
-      if (!selected) return { action: "handled" };
+      // Only swallow a submission when an interactive picker was shown and dismissed.
+      // Headless/RPC modes have no picker, so their input must keep flowing.
+      if (!selected && ctx.hasUI) return { action: "handled" };
     }
     return { action: "continue" };
   });
@@ -329,24 +403,21 @@ export default function architectSessionExtension(pi: ExtensionAPI): void {
 }
 EOF
 
-# 4. Génération des 5 domaines d'architecture
+# ---------------------------------------------------------------------------
+# 4. Domaines d'architecture — créés UNIQUEMENT s'ils n'existent pas déjà
+#    (tes contextes sont préservés d'un run à l'autre).
+# ---------------------------------------------------------------------------
 get_model() {
-  case "$1" in
-    network) echo "openrouter/dots-studio/dots-3-note-preview:free" ;;
-    security) echo "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free" ;;
-    compatibility) echo "openrouter/cohere/north-mini-code:free" ;;
-    node) echo "openrouter/particle-ai/particle-1:free" ;;
-    optimization) echo "openrouter/particle-ai/particle-1:free" ;;
-  esac
+  echo "openrouter/cohere/north-mini-code:free"
 }
 
 get_definition() {
   case "$1" in
-    network) echo "Architecte réseau : topologie, protocoles, routage, latence et résilience des communications" ;;
-    security) echo "Architecte sécurité : authentification, autorisation, chiffrement, surface d'attaque et conformité" ;;
-    compatibility) echo "Architecte compatibilité : rétrocompatibilité, contrats d'API, versions et interopérabilité" ;;
-    node) echo "Architecte Node : runtime Node.js, gestion mémoire/event-loop, dépendances et configuration des nœuds" ;;
-    optimization) echo "Architecte optimisation : performances, profiling, caching et réduction des coûts CPU/mémoire/I/O" ;;
+    network) echo "Architecte et expert réseaux spécialisé dans les systèmes décentralisés Peer-to-Peer : conçoit des mécanismes réseau nativement décentralisés, ne se limite pas à un seul paradigme, mais pense le système le plus adapté au besoin." ;;
+    security) echo "Architecte et expert en sécurité des systèmes d'information : conçoit des architectures sécurisées by design, établissant la robustesse entre le réseau Peer-to-Peer et la couche logicielle en C." ;;
+    compatibility) echo "Architecte et expert de compatibilité entre systèmes d'architectures différentes : conçoit un système en C de bas niveau qui peut tourner nativement et correctement sur des architectures différentes (x86-64 (AMD64) - AArch64 (ARMv8/v9 64-bit) - AArch32 (ARMv7) - ARM Cortex-M (32-bit) - RISC-V RV32 - RISC-V RV64)." ;;
+    node) echo "Architecte et expert des systèmes de graphes : pense l'existence et l'intégration d'un nœud dans un graphe complexe et ses relations avec les autres nœuds." ;;
+    optimization) echo "Architecte et expert d'optimisation des systèmes de bas niveau : conçoit en C un système de bas niveau nativement robuste en matière de stockage et de gestion de la mémoire." ;;
   esac
 }
 
@@ -357,20 +428,28 @@ capitalize() {
 for domain in network security compatibility node optimization; do
   agent_file="architecture/${domain}/${domain}-architect-agent.md"
   context_file="architecture/${domain}/${domain}-architect-context.md"
-  model_val="$(get_model "$domain")"
+  draft_file="architecture/${domain}/${domain}-architect-context_draft.md"
+  model_val="$(get_model)"
   def_val="$(get_definition "$domain")"
   title_val="$(capitalize "$domain")"
 
-  cat << EOF > "$agent_file"
+  if [ ! -f "$agent_file" ]; then
+    cat << EOF > "$agent_file"
 model: ${model_val}
-definition: "${def_val}"
-instructions:
-  - "Appuie systématiquement tes analyses sur ${domain}-architect-context.md et le code existant."
-  - "Signale tout écart entre l'implémentation et les règles d'architecture du domaine ${domain}."
-  - "Propose des décisions concrètes, chiffrées et directement actionnables."
-EOF
 
-  cat << EOF > "$context_file"
+definition: "${def_val}"
+
+instructions:
+  - "La logique est plus prioritaire que le détail technique."
+  - "Ton contexte principal se trouve dans ./${domain}-architect-context.md que tu dois considérer très sérieusement."
+  - "Quand une session commence, tu charges complètement ton contexte (expliqué avant). On échange profondément sur un sujet ; si un élément est concluant, je te demande de l'ajouter comme un seul point (- ...) dans ./${domain}-architect-context.md d'une manière explicite et compacte pour que ce dernier soit suffisant afin d'être compris dans le contexte. Sinon tu ne fais rien, ou je te demande de le mettre dans ./${domain}-architect-context_draft.md pour être repris dans d'autres sessions. Le fichier draft est censé être nettoyé et vide à chaque fois."
+  - "Quand une session commence, tu vérifies si ./${domain}-architect-context_draft.md est vide pour commencer un nouveau sujet ; sinon tu me dis qu'il y a un sujet en cours."
+EOF
+    echo "  créé : $agent_file"
+  fi
+
+  if [ ! -f "$context_file" ]; then
+    cat << EOF > "$context_file"
 # Contexte Architecture — ${title_val}
 
 ## Périmètre et objectifs
@@ -382,6 +461,22 @@ EOF
 ## Décisions d'architecture (ADR)
 - Documenter les choix structurants et leurs justifications.
 EOF
+    echo "  créé : $context_file"
+  fi
+
+  # Le draft est un espace de travail éphémère, mais versionné (fichier .md).
+  [ -f "$draft_file" ] || : > "$draft_file"
 done
 
-echo "Préparation terminée dans $PWD."
+# ---------------------------------------------------------------------------
+# 5. Credential local : .env (git-ignoré) créé depuis le modèle si absent.
+# ---------------------------------------------------------------------------
+if [ ! -f .omp/.env ]; then
+  cp .omp/.env.example .omp/.env
+  echo
+  echo "ACTION REQUISE : renseigne ta clé dans .omp/.env (OPENROUTER_API_KEY=...)."
+fi
+
+echo
+echo "Préparation terminée dans $ROOT"
+echo "Lance une session avec : ./omp-arch.sh"

@@ -2,7 +2,9 @@ providers:
   openrouter:
     baseUrl: https://openrouter.ai/api/v1
     api: openai-completions
+    # Résolue depuis .omp/.env (chargé car le lanceur pointe le dossier agent d'omp ici).
     apiKey: OPENROUTER_API_KEY
+    authHeader: true
     models:
       - id: free
         name: OpenRouter Free Router (Auto Tool-Calling)

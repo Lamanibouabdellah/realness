@@ -1,7 +1,0 @@
-sessions
-terminal-sessions
-cache
-*.db*
-*.log
-*changelog*
-*.lock

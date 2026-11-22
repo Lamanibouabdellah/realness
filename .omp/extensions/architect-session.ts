@@ -126,11 +126,12 @@ export default function architectSessionExtension(pi: ExtensionAPI): void {
     activeDomain = agent.domain;
 
     if (agent.model) {
-      const available = ctx.modelRegistry.getAvailable();
+      const registry = ctx.modelRegistry;
+      const available = registry ? registry.getAvailable() : [];
       const resolved = agent.model.includes("/")
         ? (() => {
             const [provider, ...rest] = agent.model.split("/");
-            return ctx.modelRegistry.find(provider, rest.join("/"));
+            return registry?.find(provider, rest.join("/"));
           })()
         : available.find((m) => m.id === agent.model || `${m.provider}/${m.id}` === agent.model);
 
@@ -206,7 +207,9 @@ export default function architectSessionExtension(pi: ExtensionAPI): void {
   pi.on("input", async (_event, ctx) => {
     if (!activeDomain) {
       const selected = await selectAgent(ctx);
-      if (!selected) return { action: "handled" };
+      // Only swallow a submission when an interactive picker was shown and dismissed.
+      // Headless/RPC modes have no picker, so their input must keep flowing.
+      if (!selected && ctx.hasUI) return { action: "handled" };
     }
     return { action: "continue" };
   });
