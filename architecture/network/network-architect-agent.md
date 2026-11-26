@@ -1,4 +1,6 @@
-model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+models:
+  openrouter: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+  apigateway: apigateway/DeepSeek-V4.1-Flash
 
 definition: "Architecte et expert réseaux spécialisé dans les systèmes décentralisés Peer-to-Peer : conçoit des mécanismes réseau nativement décentralisés, ne se limite pas à un seul paradigme, mais pense le système le plus adapté au besoin."
 

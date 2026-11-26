@@ -1,4 +1,6 @@
-model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+models:
+  openrouter: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+  apigateway: apigateway/DeepSeek-V4.1-Flash
 
 definition: "Architecte et expert en sécurité des systèmes d'information : conçoit des architectures sécurisées by design, établissant la robustesse entre le réseau Peer-to-Peer et la couche logicielle en C."
 

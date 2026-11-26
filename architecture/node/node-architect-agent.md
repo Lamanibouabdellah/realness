@@ -1,4 +1,6 @@
-model: openrouter/inclusionai/ling-3.2-flash:free
+models:
+  openrouter: openrouter/inclusionai/ling-3.2-flash:free
+  apigateway: apigateway/DeepSeek-V4.1-Flash
 
 definition: "Architecte et expert des systèmes de graphes : pense l'existence et l'intégration d'un nœud dans un graphe complexe et ses relations avec les autres nœuds."
 

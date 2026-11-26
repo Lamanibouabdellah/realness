@@ -1,4 +1,28 @@
+# Deux voies d'inférence : OpenRouter | API Gateway Amundi (studio-llm-gateway).
+#
+# Le gateway Amundi n'expose pas UNE API mais TROIS surfaces distinctes ; chacune
+# a son propre fournisseur ci-dessous (même jeton ALTO_STUDIO_TOKEN) :
+#
+#   apigateway           OpenAI « Chat Completions »   <root>/v2/usecase/35
+#   apigateway-openai    OpenAI « Responses »          <root>/v2/usecase/35/openai/v1
+#   apigateway-anthropic Anthropic « Messages »        <root>/usecase/35/providers/anthropic/models
+#
+# Les trois surfaces sont routées par le modèle : le corps de requête porte l'id
+# (Anthropic inclus), donc un seul `baseUrl` par surface suffit.
+#
+# Aucun bloc `discovery` : <root>/models annonce aussi des modèles inutilisables
+# par omp ; les entrées ci-dessous sont la seule source de vérité.
+# Roster relevé sur <root>/models le 2026-11-26, chaque entrée validée par une
+# requête omp réelle. Écartés (annoncés mais KO) :
+#   gpt-5-codex, gpt-5.1-codex, gpt-5.1-codex-mini  404 DeploymentNotFound
+#   claude-fable-5, mistral-7b-instruct-v0-3         réponse vide systématique
+#   codestral, mistral-medium, mistral-small        rejettent stream_options.include_usage
+#   mixtral-8x22b-instruct-v0-1-awq                 « roles must alternate » (400)
+#   qwen3-vl-32b-instruct                           501 Hosted_vllmException
 providers:
+  # -------------------------------------------------------------------------
+  # Voie « OpenRouter ».
+  # -------------------------------------------------------------------------
   openrouter:
     baseUrl: https://openrouter.ai/api/v1
     api: openai-completions
@@ -34,3 +58,313 @@ providers:
       # Secours Agent 5 : Sécurité des systèmes d'information
       - id: dots-studio/dots-3-note-preview:free
         name: Dots3-Note Preview (Free)
+
+  # -------------------------------------------------------------------------
+  # API Gateway — surface OpenAI « Chat Completions ».
+  # -------------------------------------------------------------------------
+  apigateway:
+    baseUrl: https://studio-llm-gateway.intramundi.com/v2/usecase/35
+    api: openai-completions
+    apiKey: ALTO_STUDIO_TOKEN
+    authHeader: true
+    models:
+      - id: DeepSeek-V4-Flash
+        name: DeepSeek V4 Flash
+        input: [text]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: deepseek-v3
+      - id: DeepSeek-V4-Pro
+        name: DeepSeek V4 Pro
+        input: [text]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: deepseek-v3
+      - id: DeepSeek-V4.1-Flash
+        name: DeepSeek V4.1 Flash
+        input: [text]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: deepseek-v3
+      - id: DeepSeek-V4.1-Flash-1017
+        name: DeepSeek V4.1 Flash 1017
+        input: [text]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: deepseek-v3
+      - id: FW-GLM-5.3
+        name: GLM 5.3
+        input: [text]
+        contextWindow: 1048576
+        maxTokens: 128000
+        tokenizer: glm5
+      - id: FW-Kimi-K3
+        name: Kimi K3 (FW)
+        input: [text]
+        contextWindow: 131072
+        maxTokens: 65536
+        tokenizer: kimi-k2
+      - id: Kimi-K2.7-Code
+        name: Kimi K2.7 Code
+        input: [text]
+        contextWindow: 262144
+        maxTokens: 128000
+        tokenizer: kimi-k2
+      - id: Kimi-K3.1-Pro
+        name: Kimi K3.1 Pro
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        tokenizer: kimi-k2
+      - id: codestral-22b
+        name: Codestral 22B (CAGIP)
+        input: [text]
+        contextWindow: 32768
+        maxTokens: 16384
+      - id: gemma-4-31b-it
+        name: Gemma 4 31B IT (CAGIP)
+        input: [text, image]
+        contextWindow: 131072
+        maxTokens: 65536
+      - id: glm-5-3-flash-nvfp4
+        name: GLM 5.3 Flash NVFP4 (CAGIP)
+        input: [text]
+        contextWindow: 262144
+        maxTokens: 128000
+        tokenizer: glm5
+      # Mistral : l'hôte refuse `store` et `max_completion_tokens`.
+      - id: mistral-large-3
+        name: Mistral Large 3
+        input: [text, image]
+        contextWindow: 128000
+        maxTokens: 64000
+        compat:
+          supportsStore: false
+          maxTokensField: max_tokens
+      - id: mistral-small-3-2-24b-instruct-2506
+        name: Mistral Small 3.2 24B Instruct (CAGIP)
+        input: [text, image]
+        contextWindow: 32768
+        maxTokens: 16384
+      - id: mistral-small-4-119b-2603-nvfp4
+        name: Mistral Small 4 119B NVFP4 (CAGIP)
+        input: [text]
+        contextWindow: 32768
+        maxTokens: 16384
+      - id: qwen3-32b
+        name: Qwen3 32B (CAGIP)
+        input: [text]
+        contextWindow: 32768
+        maxTokens: 16384
+        tokenizer: qwen3
+      - id: qwen3-6-27b
+        name: Qwen3.6 27B (CAGIP)
+        input: [text]
+        contextWindow: 131072
+        maxTokens: 65536
+        tokenizer: qwen3
+      - id: qwen3-8-27b-nvfp4
+        name: Qwen3.8 27B NVFP4 (CAGIP)
+        input: [text]
+        contextWindow: 131072
+        maxTokens: 65536
+        tokenizer: qwen3
+
+  # -------------------------------------------------------------------------
+  # API Gateway — surface OpenAI « Responses » (raisonnement GPT).
+  # -------------------------------------------------------------------------
+  apigateway-openai:
+    baseUrl: https://studio-llm-gateway.intramundi.com/v2/usecase/35/openai/v1
+    api: openai-responses
+    apiKey: ALTO_STUDIO_TOKEN
+    authHeader: true
+    models:
+      - id: gpt-4.1
+        name: GPT 4.1
+        input: [text, image]
+        contextWindow: 1047576
+        maxTokens: 128000
+        tokenizer: o200k
+      - id: gpt-4.1-mini
+        name: GPT 4.1 mini
+        input: [text, image]
+        contextWindow: 1047576
+        maxTokens: 128000
+        tokenizer: o200k
+      - id: gpt-5-mini
+        name: GPT 5 mini
+        input: [text, image]
+        contextWindow: 400000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.2-codex
+        name: GPT 5.2 Codex
+        input: [text]
+        contextWindow: 400000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.3-codex
+        name: GPT 5.3 Codex
+        input: [text]
+        contextWindow: 400000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.4
+        name: GPT 5.4
+        input: [text, image]
+        contextWindow: 400000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.4-mini
+        name: GPT 5.4 mini
+        input: [text, image]
+        contextWindow: 400000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.4-nano
+        name: GPT 5.4 nano
+        input: [text, image]
+        contextWindow: 400000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.5
+        name: GPT 5.5
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.6-luna
+        name: GPT 5.6 Luna
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.6-sol
+        name: GPT 5.6 Sol
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-5.6-terra
+        name: GPT 5.6 Terra
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-6-luna
+        name: GPT 6 Luna
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-6-sol
+        name: GPT 6 Sol
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-6.1-sol
+        name: GPT 6.1 Sol
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+      - id: gpt-6.1-terra
+        name: GPT 6.1 Terra
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: o200k
+
+  # -------------------------------------------------------------------------
+  # API Gateway — surface Anthropic « Messages » (modèle dans le corps).
+  # -------------------------------------------------------------------------
+  apigateway-anthropic:
+    baseUrl: https://studio-llm-gateway.intramundi.com/usecase/35/providers/anthropic/models
+    api: anthropic-messages
+    apiKey: ALTO_STUDIO_TOKEN
+    auth: apiKey
+    authHeader: true
+    disableStrictTools: true
+    models:
+      - id: claude-haiku-5-5
+        name: Claude Haiku 5.5
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: claude-v5
+      - id: claude-opus-4-6
+        name: Claude Opus 4.6
+        input: [text, image]
+        contextWindow: 200000
+        maxTokens: 100000
+        reasoning: true
+        tokenizer: claude-v47
+      - id: claude-opus-4-7
+        name: Claude Opus 4.7
+        input: [text, image]
+        contextWindow: 200000
+        maxTokens: 100000
+        reasoning: true
+        tokenizer: claude-v47
+      - id: claude-opus-4-8
+        name: Claude Opus 4.8
+        input: [text, image]
+        contextWindow: 200000
+        maxTokens: 100000
+        reasoning: true
+        tokenizer: claude-v47
+      - id: claude-opus-5
+        name: Claude Opus 5
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: claude-v5
+      - id: claude-opus-5-5
+        name: Claude Opus 5.5
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: claude-v5
+      - id: claude-sonnet-4-6
+        name: Claude Sonnet 4.6
+        input: [text, image]
+        contextWindow: 200000
+        maxTokens: 100000
+        reasoning: true
+        tokenizer: claude-v47
+      - id: claude-sonnet-5
+        name: Claude Sonnet 5
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: claude-v5
+      - id: claude-sonnet-5-5
+        name: Claude Sonnet 5.5
+        input: [text, image]
+        contextWindow: 1000000
+        maxTokens: 128000
+        reasoning: true
+        tokenizer: claude-v5-sonnet

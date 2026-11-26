@@ -1,26 +1,13 @@
 enabledProviders: []
 
-disabledProviders:
-  - anthropic
-  - openai
-  - openai-codex
-  - google
-  - google-vertex
-  - groq
-  - mistral
-  - xai
-  - github-copilot
-  - cursor
-  - azure
-  - amazon-bedrock
-  - deepseek
-  - ollama
-  - lm-studio
-  - llama.cpp
+disabledProviders: []
 
-# enabledModels:
-#   - openrouter/*:free
-#   - openrouter/free
+enabledModels:
+  - openrouter/*:free
+  - openrouter/free
+  - apigateway/*
+  - apigateway-openai/*
+  - apigateway-anthropic/*
 
 modelRoles:
   default: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free

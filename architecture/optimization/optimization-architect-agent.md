@@ -1,4 +1,6 @@
-model: openrouter/particle-ai/particle-1:free
+models:
+  openrouter: openrouter/particle-ai/particle-1:free
+  apigateway: apigateway/DeepSeek-V4.1-Flash
 
 definition: "Architecte et expert d'optimisation des systèmes de bas niveau : conçoit en C un système de bas niveau nativement robuste en matière de stockage et de gestion de la mémoire."
 

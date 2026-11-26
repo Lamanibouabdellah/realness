@@ -27,6 +27,10 @@
 .omp/.env
 *.env.local
 
+# Résidus temporaires (jamais versionnés)
+.omp/.env.tmp*
+architecture/**/*.tmp*
+
 # --- Bruit OS / éditeur ----------------------------------------------
 .DS_Store
 *.swp
